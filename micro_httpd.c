@@ -17,6 +17,11 @@
 	A simple HTTP server implemented in C language,  
 	used to help beginners understand socket, multithreading and other related knowledge.
 */
+
+#define MHTTP_VERSION	"v0.2.3"
+#define MHTTP_DATE		"20181120"
+
+
 #define DEBUG 1
 #if DEBUG
 #define DPRINT(fmt, args...) fprintf(stdout, fmt, ##args)
@@ -24,20 +29,20 @@
 #define DPRINT(fmt, args...)
 #endif
 
-#define THREAD_NUM			4  /* can be adjusted according to the hardware  */
-#define SERVER_LISTEN_PORT  80
-#define MAX_BUF_LEN			(2048)
+#define THREAD_NUM		4  /* can be adjusted according to the hardware  */
+#define SERVER_LISTEN_PORT  	80
+#define MAX_BUF_LEN		(2048)
 #define HTTPD_SERVER_IP		"127.0.0.1"
 
-typedef unsigned int			MHD_ATOMIC_T;
+typedef unsigned int		MHD_ATOMIC_T;
 #define MHD_ATOMIC_SET(v, i)	__sync_lock_test_and_set((&v), i)
-#define MHD_ATOMIC_READ(v)		__sync_or_and_fetch((&v), 0)
-#define MHD_ATOMIC_INC(v) 		__sync_add_and_fetch((&v),1)
-#define MHD_ATOMIC_DEC(v) 		__sync_sub_and_fetch((&v),1)
+#define MHD_ATOMIC_READ(v)	__sync_or_and_fetch((&v), 0)
+#define MHD_ATOMIC_INC(v) 	__sync_add_and_fetch((&v),1)
+#define MHD_ATOMIC_DEC(v) 	__sync_sub_and_fetch((&v),1)
 #define MHD_ATOMIC_ADD(v,add) 	__sync_add_and_fetch((&v),(add))
 #define MHD_ATOMIC_SUB(v,sub) 	__sync_sub_and_fetch((&v),(sub))
 
-#define HTTP_MAINPAGE_RES_HDR "HTTP/1.1 200 OK\r\nServer: MicroHttpServer-0.2.3\r\nContent-Type: %s\r\nContent-Length: %d\r\nConnection: close\r\n\r\n"
+#define HTTP_MAINPAGE_RES_HDR "HTTP/1.1 200 OK\r\nServer: MicroHttpServer-%s\r\nContent-Type: %s\r\nContent-Length: %d\r\nConnection: close\r\n\r\n"
 #define HTTP_MAINPAGE_CONT "<html><head><title>Hello, Micro Http!</title></head><body><h1>Hello, Micro Http!</h1></body></html>"
 
 static int httpd = -1;
@@ -121,7 +126,7 @@ static int mdh_send_response(int client_fd)
 	char http_res_header[MAX_BUF_LEN];
 	int ret;
 
-	snprintf(http_res_header, MAX_BUF_LEN, HTTP_MAINPAGE_RES_HDR, "text/html", (int)strlen(HTTP_MAINPAGE_CONT));
+	snprintf(http_res_header, MAX_BUF_LEN, HTTP_MAINPAGE_RES_HDR, MHTTP_VERSION, "text/html", (int)strlen(HTTP_MAINPAGE_CONT));
 
 	/* send http response header */
 	ret = write(client_fd, http_res_header, strlen(http_res_header));
@@ -178,7 +183,6 @@ static void *mhd_work_thread(void *arg)
 		MHD_ATOMIC_SET(thread_in_use[tid], TSTATE_IDLE);
 	}
 	return NULL;
-
 }
 
 static int mhd_thread_pool_init(void)
@@ -242,4 +246,3 @@ int main(void)
 	
 	return 0;
 }
-
